@@ -28,10 +28,20 @@
         <div class="w-3 border-right-1 border-400 pr-3">
           <p class="p-text-secondary">Section name</p>
           <p-listbox
-            styleClass="border-transparent"
+            styleClass="border-transparent auto_trigger"
             [options]="categories"
+            ke
             (onClick)="sectionOnClick($event)"
-          ></p-listbox>
+          >
+            <ng-template let-country let-i="index" pTemplate="item">
+              <button
+                type="hidden"
+                class="hidden"
+                [id]="'category-' + i"
+              ></button>
+              <div>{{ country.label }}</div>
+            </ng-template>
+          </p-listbox>
         </div>
 
         <div class="w-9 pl-5" formArrayName="sections">
@@ -61,14 +71,14 @@
                         <div
                           class="p-3 border-round border-1 border-400 mr-3"
                           [ngClass]="[
-                            task.value['isActive'] ? 'container-checkbox' : ''
+                            task.value['isEnabled'] ? 'container-checkbox' : ''
                           ]"
                         >
                           <span class="pr-2">{{ itemTask.label }}</span>
                           <p-checkbox
                             name="task"
                             [binary]="true"
-                            formControlName="isActive"
+                            formControlName="isEnabled"
                           ></p-checkbox>
                         </div>
                       </ng-container>
@@ -77,122 +87,133 @@
                 </div>
 
                 <!-- section added task -->
-                <p class="pt-4 pb-4 p-text-secondary">Added task 2</p>
+                <p class="pt-4 pb-4 p-text-secondary">Added task {{ countTask(getTasks(section)) }}</p>
 
-                <p-accordion [multiple]="true">
-                  <ng-container formArrayName="tasks">
-                    <ng-container
-                      *ngFor="
-                        let task of getTasks(section).controls;
-                        let iTask = index
-                      "
-                    >
+                <ng-container *ngIf="isTaskNotEmpty(getTasks(section)) else noTask">
+                  <p-accordion [multiple]="true">
+                    <ng-container formArrayName="tasks">
                       <ng-container
-                        [formGroupName]="iTask"
-                        *ngIf="task.get('isActive')?.value"
+                        *ngFor="
+                          let task of getTasks(section).controls;
+                          let iTask = index
+                        "
                       >
                         <ng-container
-                          *ngIf="categories[iSection].tasks[iTask] as itemTask"
+                          [formGroupName]="iTask"
+                          *ngIf="task.get('isEnabled')?.value"
                         >
-                          <p-accordionTab
-                            [header]="itemTask.label"
-                            headerStyleClass="bg-white border-bottom-1 border-none border-noround text-base text-color"
-                            contentStyleClass="border-none"
-                            [selected]="isEditable"
+                          <ng-container
+                            *ngIf="
+                              categories[iSection].tasks[iTask] as itemTask
+                            "
                           >
-                            <ul>
-                              <li>
-                                <div>
-                                  <p>
-                                    Write an additional instructions to be
-                                    shared with the new joiner
-                                  </p>
+                            <p-accordionTab
+                              [header]="itemTask.label"
+                              headerStyleClass="bg-white border-bottom-1 border-none border-noround text-base text-color"
+                              contentStyleClass="border-none"
+                              [selected]="isEditable"
+                            >
+                              <ul>
+                                <li>
                                   <div>
-                                    <p-editor
-                                      [style]="{ height: '320px' }"
-                                      formControlName="editor"
-                                    ></p-editor>
+                                    <p>
+                                      Write an additional instructions to be
+                                      shared with the new joiner
+                                    </p>
+                                    <div>
+                                      <p-editor
+                                        [style]="{ height: '320px' }"
+                                        formControlName="editor"
+                                      ></p-editor>
+                                    </div>
                                   </div>
-                                </div>
-                              </li>
-                              <li>
-                                <p>Custom fields</p>
-                                <div>
-                                  <!-- dynamic form -->
-                                  <!-- <app-dynamic-form /> -->
+                                </li>
+                                <li>
+                                  <p>Custom fields</p>
+                                  <div>
+                                    <!-- dynamic form -->
+                                    <!-- <app-dynamic-form /> -->
 
-                                  <ng-container formArrayName="dynamic">
-                                    <ng-container
-                                      *ngFor="
-                                        let dynamic of getDynamics(task)
-                                          .controls;
-                                        let iDynamic = index
-                                      "
-                                    >
-                                      <ng-container [formGroupName]="iDynamic">
-                                        <div class="grid p-fluid">
-                                          <div class="col-12 md:col-4">
-                                            <input
-                                              pInputText
-                                              placeholder="Field name"
-                                              [type]="dynamic.value.type"
-                                              formControlName="value"
-                                            />
-                                          </div>
+                                    <ng-container formArrayName="dynamic">
+                                      <ng-container
+                                        *ngFor="
+                                          let dynamic of getDynamics(task)
+                                            .controls;
+                                          let iDynamic = index
+                                        "
+                                      >
+                                        <ng-container
+                                          [formGroupName]="iDynamic"
+                                        >
+                                          <div class="grid p-fluid">
+                                            <div class="col-12 md:col-4">
+                                              <input
+                                                pInputText
+                                                placeholder="Field name"
+                                                [type]="dynamic.value.type"
+                                                formControlName="value"
+                                              />
+                                            </div>
 
-                                          <div class="col-12 md:col-2">
-                                            <!-- <app-dynamic-dropdown /> -->
-                                            <p-dropdown
-                                              appendTo="body"
-                                              [options]="[
-                                                'text',
-                                                'number',
-                                                'date',
-                                                'select'
-                                              ]"
-                                              formControlName="type"
-                                            ></p-dropdown>
-                                          </div>
+                                            <div class="col-12 md:col-2">
+                                              <!-- <app-dynamic-dropdown /> -->
+                                              <p-dropdown
+                                                appendTo="body"
+                                                [options]="[
+                                                  'text',
+                                                  'number',
+                                                  'date',
+                                                  'select'
+                                                ]"
+                                                formControlName="type"
+                                              ></p-dropdown>
+                                            </div>
 
-                                          <div class="col-12 md:col-2">
-                                            <button
-                                              pButton
-                                              pRipple
-                                              type="button"
-                                              icon="pi pi-trash"
-                                              class="p-button-rounded p-button-danger p-button-text p-button-lg"
-                                              (click)="
-                                                removeCustomField(
-                                                  iDynamic,
-                                                  iSection,
-                                                  iTask
-                                                )
-                                              "
-                                            ></button>
+                                            <div class="col-12 md:col-2">
+                                              <button
+                                                pButton
+                                                pRipple
+                                                type="button"
+                                                icon="pi pi-trash"
+                                                class="p-button-rounded p-button-danger p-button-text p-button-lg"
+                                                (click)="
+                                                  removeCustomField(
+                                                    iDynamic,
+                                                    iSection,
+                                                    iTask
+                                                  )
+                                                "
+                                              ></button>
+                                            </div>
                                           </div>
-                                        </div>
+                                        </ng-container>
                                       </ng-container>
                                     </ng-container>
-                                  </ng-container>
 
-                                  <button
-                                    pButton
-                                    type="button"
-                                    label="Add field"
-                                    icon="pi pi-plus"
-                                    iconPos="left"
-                                    class="p-button-text p-button-danger p-0"
-                                    (click)="addFields(iSection, iTask)"
-                                  ></button>
-                                </div>
-                              </li>
-                            </ul>
-                          </p-accordionTab>
+                                    <button
+                                      pButton
+                                      type="button"
+                                      label="Add field"
+                                      icon="pi pi-plus"
+                                      iconPos="left"
+                                      class="p-button-text p-button-danger p-0"
+                                      (click)="addFields(iSection, iTask)"
+                                    ></button>
+                                  </div>
+                                </li>
+                              </ul>
+                            </p-accordionTab>
+                          </ng-container>
                         </ng-container>
                       </ng-container>
                     </ng-container>
-                  </ng-container>
-                </p-accordion>
+                  </p-accordion>
+                </ng-container>
+                
+                <!-- empty task -->
+                <ng-template #noTask>
+                  <app-empty-message title="No task added yet" subTitle="Pick the information you would like to add from above and it will appear here to be configured"/>
+                </ng-template>
               </ng-container>
             </ng-container>
           </ng-container>

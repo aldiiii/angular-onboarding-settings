@@ -34,7 +34,7 @@ export class ModalFormComponent {
         const tasksForm = new FormGroup({
           id: new FormControl(task.id),
           sectionId: new FormControl(task.categoryId),
-          isActive: new FormControl(false),
+          isEnabled: new FormControl(false),
           editor: new FormControl('', Validators.required),
           dynamic: new FormArray([]),
         });
@@ -59,6 +59,11 @@ export class ModalFormComponent {
   }
 
   onShow() {
+    // auto trigger first section
+    let element: HTMLElement = document.getElementById(
+      'category-0'
+    ) as HTMLElement;
+    element.click();
     this.onboardingProcessForm.patchValue(this.dataEditable);
   }
 
@@ -80,7 +85,6 @@ export class ModalFormComponent {
         ]),
       });
       this.sections.push(sectionForm);
-      console.log(this.onboardingProcessForm.value);
     }
   }
 
@@ -113,6 +117,28 @@ export class ModalFormComponent {
     const tasks = this.sections.controls[section].get('tasks') as FormArray;
     const dynamics = tasks.controls[task].get('dynamic') as FormArray;
     dynamics.removeAt(indexDynamic);
+  }
+
+  private filterTask(data: FormArray): any[] {
+    const tasks = data.value as Array<any>;
+    const currentSection = tasks.filter(
+      (section) => section.sectionId == this.selectedSection
+    );
+    return currentSection;
+  }
+
+  countTask(data: FormArray): number {
+    const currentSection = this.filterTask(data);
+    const Taskslength = currentSection.filter(
+      (section) => section.isEnabled
+    ).length;
+    return Taskslength;
+  }
+
+  isTaskNotEmpty(data: FormArray): boolean {
+    const currentSection = this.filterTask(data);
+    // tests whether at least one element in the array passes then will return true
+    return currentSection.some((section) => section.isEnabled == true);
   }
 
   onSubmit() {

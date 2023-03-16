@@ -57,7 +57,6 @@ export class HomeComponent implements OnInit {
   }
 
   onSave(data: any): void {
-    console.log(this.dataEditable);
     if (this.dataEditable !== undefined) {
       this.editItem(data);
       return;
@@ -71,7 +70,6 @@ export class HomeComponent implements OnInit {
     let index = this.products.findIndex((item) => item['id'] === data.id);
     this.products[index] = data;
     this.products = Object.assign([], this.products);
-    console.log(this.products);
     this.storeData(this.products);
     this.getData();
     this.onClose();

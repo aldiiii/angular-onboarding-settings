@@ -60,7 +60,6 @@ export class DynamicFieldComponent implements AfterViewInit {
     const dynamicComponent =
       this.dynamicInputContainer.createComponent(componentInstance);
     dynamicComponent.setInput('field', this.field);
-    console.log(this.field);
     this.changeDetector.detectChanges();
   }
 }
