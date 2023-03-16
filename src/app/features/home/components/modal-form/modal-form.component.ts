@@ -19,7 +19,7 @@ export class ModalFormComponent {
   selectedSection = 'personal_information_id';
 
   onboardingProcessForm = new FormGroup({
-    id: new FormControl('', Validators.required),
+    id: new FormControl(''),
     processName: new FormControl('', Validators.required),
     sections: new FormArray<any>([]),
   });
@@ -46,16 +46,20 @@ export class ModalFormComponent {
     });
   }
 
-  onShow() {
-    this.onboardingProcessForm.patchValue(this.dataEditable);
-  }
-
   get form() {
     return this.onboardingProcessForm.controls;
   }
 
   get sections() {
     return this.onboardingProcessForm.get('sections') as FormArray;
+  }
+
+  get isEditable(): boolean {
+    return this.dataEditable !== undefined;
+  }
+
+  onShow() {
+    this.onboardingProcessForm.patchValue(this.dataEditable);
   }
 
   getTasks(section: any) {
@@ -114,7 +118,7 @@ export class ModalFormComponent {
   onSubmit() {
     if (this.onboardingProcessForm.invalid) return;
 
-    if (this.dataEditable === undefined) {
+    if (!this.isEditable) {
       this.form.id.setValue(randomString());
     }
     this.onSave.emit(this.onboardingProcessForm.value);
