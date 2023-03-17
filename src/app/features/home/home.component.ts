@@ -22,22 +22,14 @@ export class HomeComponent implements OnInit {
     this.getData();
   }
 
-  getData(): void {
-    const data = this.localStorageService.getItem(onBoardingProcessKey);
-    if (Object.keys(data).length === 0) return;
-    this.products = data;
-  }
+  // =======public methods============
 
-  openForm(data?: any) {
+  openForm(data?: any): void {
     this.dataEditable = data;
     this.isDisplayDialog = true;
   }
 
-  storeData(data: any): void {
-    this.localStorageService.setItem(onBoardingProcessKey, data);
-  }
-
-  deleteProduct(product: any) {
+  deleteProduct(product: any): void {
     this.confirmationService.confirm({
       message:
         'Would you like to delete this process? Once you delete a process, you won’t be able to restore it again',
@@ -64,6 +56,18 @@ export class HomeComponent implements OnInit {
     this.products.push(data);
     this.storeData(this.products);
     this.onClose();
+  }
+
+  // =======private methods============
+
+  private getData(): void {
+    const data = this.localStorageService.getItem(onBoardingProcessKey);
+    if (Object.keys(data).length === 0) return;
+    this.products = data;
+  }
+
+  private storeData(data: any): void {
+    this.localStorageService.setItem(onBoardingProcessKey, data);
   }
 
   private editItem(data: any) {

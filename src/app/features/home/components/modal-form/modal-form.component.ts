@@ -25,32 +25,16 @@ export class ModalFormComponent {
   });
 
   constructor() {
-    this.categories.forEach((section) => {
-      const sectionsForm = new FormGroup({
-        tasks: new FormArray<any>([]),
-      });
-
-      section.tasks.forEach((task) => {
-        const tasksForm = new FormGroup({
-          id: new FormControl(task.id),
-          sectionId: new FormControl(task.categoryId),
-          isEnabled: new FormControl(false),
-          editor: new FormControl('', Validators.required),
-          dynamic: new FormArray([]),
-        });
-
-        sectionsForm.controls.tasks.push(tasksForm);
-      });
-
-      this.sections.push(sectionsForm);
-    });
+    this.buildForm();
   }
+
+  // =======public methods============
 
   get form() {
     return this.onboardingProcessForm.controls;
   }
 
-  get sections() {
+  get sections(): FormArray<any> {
     return this.onboardingProcessForm.get('sections') as FormArray;
   }
 
@@ -58,7 +42,9 @@ export class ModalFormComponent {
     return this.dataEditable !== undefined;
   }
 
-  onShow() {
+  // =======public methods============
+
+  onShow(): void {
     // auto trigger first section
     let element: HTMLElement = document.getElementById(
       'category-0'
@@ -67,15 +53,15 @@ export class ModalFormComponent {
     this.onboardingProcessForm.patchValue(this.dataEditable);
   }
 
-  getTasks(section: any) {
+  getTasks(section: any): FormArray<any> {
     return section.get('tasks') as FormArray;
   }
 
-  getDynamics(task: any) {
+  getDynamics(task: any): FormArray<any> {
     return task.get('dynamic') as FormArray;
   }
 
-  addSection() {
+  addSection(): void {
     for (const category of this.categories) {
       const taskForm = new FormArray([]);
 
@@ -88,43 +74,26 @@ export class ModalFormComponent {
     }
   }
 
-  sectionOnClick(event: any) {
+  sectionOnClick(event: any): void {
     this.selectedSection = event.value.id;
   }
 
-  onHide() {
+  onHide(): void {
     this.onboardingProcessForm.reset();
     this.onClose.emit();
   }
 
-  addFields(section: number, task: number) {
+  addFields(section: number, task: number): boolean {
     const tasks = this.sections.controls[section].get('tasks') as FormArray;
     const dynamics = tasks.controls[task].get('dynamic') as FormArray;
     dynamics.push(this.createDynamic());
     return false;
   }
 
-  createDynamic() {
-    return new FormGroup({
-      fieldName: new FormControl(randomString()),
-      label: new FormControl(''),
-      type: new FormControl('text'),
-      value: new FormControl('', Validators.required),
-    });
-  }
-
-  removeCustomField(indexDynamic: number, section: number, task: number) {
+  removeCustomField(indexDynamic: number, section: number, task: number): void {
     const tasks = this.sections.controls[section].get('tasks') as FormArray;
     const dynamics = tasks.controls[task].get('dynamic') as FormArray;
     dynamics.removeAt(indexDynamic);
-  }
-
-  private filterTask(data: FormArray): any[] {
-    const tasks = data.value as Array<any>;
-    const currentSection = tasks.filter(
-      (section) => section.sectionId == this.selectedSection
-    );
-    return currentSection;
   }
 
   countTask(data: FormArray): number {
@@ -141,12 +110,50 @@ export class ModalFormComponent {
     return currentSection.some((section) => section.isEnabled == true);
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.onboardingProcessForm.invalid) return;
 
     if (!this.isEditable) {
       this.form.id.setValue(randomString());
     }
     this.onSave.emit(this.onboardingProcessForm.value);
+  }
+
+  // =======private methods============
+
+  private buildForm(): void {
+    this.categories.forEach((section) => {
+      const sectionsForm = new FormGroup({
+        tasks: new FormArray<any>([]),
+      });
+      section.tasks.forEach((task) => {
+        const tasksForm = new FormGroup({
+          id: new FormControl(task.id),
+          sectionId: new FormControl(task.categoryId),
+          isEnabled: new FormControl(false),
+          editor: new FormControl('', Validators.required),
+          dynamic: new FormArray([]),
+        });
+        sectionsForm.controls.tasks.push(tasksForm);
+      });
+      this.sections.push(sectionsForm);
+    });
+  }
+
+  private createDynamic() {
+    return new FormGroup({
+      fieldName: new FormControl(randomString()),
+      label: new FormControl(''),
+      type: new FormControl('text'),
+      value: new FormControl('', Validators.required),
+    });
+  }
+
+  private filterTask(data: FormArray): any[] {
+    const tasks = data.value as Array<any>;
+    const currentSection = tasks.filter(
+      (section) => section.sectionId == this.selectedSection
+    );
+    return currentSection;
   }
 }
